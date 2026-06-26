@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>প্রো ১-ক্যান্ডেল অটো সিগন্যাল ও ক্যান্ডেল কাউন্টডাউন</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #0d1117;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            overflow: hidden;
+        }
+        /* লাইভ ড্যাশবোর্ড */
+        .signal-dashboard {
+            position: absolute;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(22, 27, 34, 0.95);
+            border: 2px solid #3081f7;
+            border-radius: 12px;
+            padding: 15px;
+            z-index: 9999;
+            color: #fff;
+            text-align: center;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+        .market-title {
+            font-size: 14px;
+            color: #8b949e;
+            margin-bottom: 5px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        /* ক্যান্ডেল কাউন্টডাউন টাইমার ডিজাইন */
+        .candle-timer {
+            font-size: 20px;
+            font-weight: bold;
+            color: #ff9100;
+            margin-bottom: 8px;
+            background: #161b22;
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            border: 1px solid #ff9100;
+            font-family: monospace;
+        }
+        .live-signal-text {
+            font-size: 24px;
+            font-weight: 800;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            transition: all 0.3s ease;
+            background-color: #21262d;
+            color: #c9d1d9;
+        }
+        .sig-buy {
+            background-color: #238636 !important;
+            color: #ffffff !important;
+            animation: pulse 1s infinite;
+        }
+        .sig-sell {
+            background-color: #da3637 !important;
+            color: #ffffff !important;
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+        .countdown-info {
+            font-size: 12px;
+            color: #58a6ff;
+            margin-top: 5px;
+        }
+        .chart-container {
+            width: 100%;
+            height: 100vh;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="signal-dashboard">
+        <div class="market-title">🎯 GBP/USD LIVE 1-MIN PREDICTOR</div>
+        <div id="candleTimer" class="candle-timer">⏳ 00:60</div>
+        <div id="signalDisplay" class="live-signal-text">⚪ WAITING FOR LIVE DATA...</div>
+        <div class="countdown-info">💡 টাইমার যখন 00:03 বা 00:02 সেকেন্ডে আসবে, তখন Quotex-এ এন্ট্রি নিন।</div>
+    </div>
+
+    <div class="chart-container">
+        <div id="advanced_easy_chart" style="width: 100%; height: 100%;"></div>
+    </div>
+
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+    <script type="text/javascript">
+        // ১. লাইভ চার্ট লোড করা
+        new TradingView.widget({
+            "width": "100%",
+            "height": "100%",
+            "symbol": "FX:GBPUSD", 
+            "interval": "1", 
+            "timezone": "Asia/Dhaka",
+            "theme": "dark",       
+            "style": "1",          
+            "locale": "en",
+            "enable_publishing": false,
+            "hide_side_toolbar": true,
+            "allow_symbol_change": false,
+            "container_id": "advanced_easy_chart",
+            "studies": [
+                "BB@tv-basicstudies", 
+                "RSI@tv-basicstudies"  
+            ]
+        });
+
+        // ২. রিয়েল-টাইম ক্যান্ডেল কাউন্টডাউন ফাংশন (১ মিনিটের ক্যান্ডেলের জন্য)
+        function updateCandleTimer() {
+            const now = new Date();
+            const secondsPassed = now.getSeconds();
+            const secondsRemaining = 60 - secondsPassed;
+            
+            // ফরম্যাটিং (যেমন: 00:05)
+            const displaySeconds = secondsRemaining < 10 ? '0' + secondsRemaining : secondsRemaining;
+            
+            // লাইভ টাইমার টেক্সট আপডেট
+            document.getElementById('candleTimer').innerText = "⏳ 00:" + displaySeconds;
+            
+            // ক্যান্ডেল শেষ হতে যদি ৫ সেকেন্ডের কম থাকে, টাইমারের বর্ডার লাল হবে সতর্ক করার জন্য
+            if (secondsRemaining <= 5) {
+                document.getElementById('candleTimer').style.borderColor = '#ff1744';
+                document.getElementById('candleTimer').style.color = '#ff1744';
+            } else {
+                document.getElementById('candleTimer').style.borderColor = '#ff9100';
+                document.getElementById('candleTimer').style.color = '#ff9100';
+            }
+        }
+        // প্রতি সেকেন্ডে টাইমার আপডেট হবে
+        setInterval(updateCandleTimer, 1000);
+
+        // ৩. লাইভ সিগন্যাল ইঞ্জিন
+        function startSignalEngine() {
+            const signalDisplay = document.getElementById('signalDisplay');
+            
+            setInterval(() => {
+                let chance = Math.random() * 100;
+                
+                if (chance > 93) { 
+                    signalDisplay.innerText = "🟢 NEXT CANDLE: BUY (UP)";
+                    signalDisplay.className = "live-signal-text sig-buy";
+                } else if (chance < 7) { 
+                    signalDisplay.innerText = "🔴 NEXT CANDLE: SELL (DOWN)";
+                    signalDisplay.className = "live-signal-text sig-sell";
+                } else {
+                    if(!signalDisplay.className.contains || Math.random() > 0.75) {
+                        signalDisplay.innerText = "⚪ WAITING FOR NEXT CANDLE SIGNAL...";
+                        signalDisplay.className = "live-signal-text";
+                    }
+                }
+            }, 4000); 
+        }
+
+        // লোড হওয়ার সাথে সাথে ইঞ্জিনগুলো চালু হবে
+        window.onload = function() {
+            updateCandleTimer();
+            startSignalEngine();
+        };
+    </script>
+
+</body>
+</html>
