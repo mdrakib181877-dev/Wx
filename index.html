@@ -123,16 +123,18 @@
             ]
         });
 
-        // ২. রিয়েল-টাইম ক্যান্ডেল কাউন্টডাউন ফাংশন
-        function updateCandleTimer() {
+        // ২. রিয়েল-টাইম ক্যান্ডেল কাউন্টডাউন ও সিগন্যাল লজিক
+        let signalLocked = false; // সিগন্যাল লক রাখার জন্য ভ্যারিয়েবল
+
+        function updateCandleEngine() {
             const now = new Date();
             const secondsPassed = now.getSeconds();
             const secondsRemaining = 60 - secondsPassed;
             
             const displaySeconds = secondsRemaining < 10 ? '0' + secondsRemaining : secondsRemaining;
-            
             document.getElementById('candleTimer').innerText = "⏳ 00:" + displaySeconds;
             
+            // টাইমারের কালার চেঞ্জ ৫ সেকেন্ড বাকি থাকতে
             if (secondsRemaining <= 5) {
                 document.getElementById('candleTimer').style.borderColor = '#ff1744';
                 document.getElementById('candleTimer').style.color = '#ff1744';
@@ -140,45 +142,45 @@
                 document.getElementById('candleTimer').style.borderColor = '#ff9100';
                 document.getElementById('candleTimer').style.color = '#ff9100';
             }
-        }
-        setInterval(updateCandleTimer, 1000);
 
-        // ৩. বাগ-মুক্ত লাইভ সিগন্যাল ইঞ্জিন
-        function startSignalEngine() {
             const signalDisplay = document.getElementById('signalDisplay');
-            
-            setInterval(() => {
-                const now = new Date();
-                const secondsPassed = now.getSeconds();
-                const secondsRemaining = 60 - secondsPassed;
 
-                // ক্যান্ডেল শেষ হওয়ার ১৫ সেকেন্ড আগে এনালাইসিস শুরু হবে
-                if (secondsRemaining <= 15 && secondsRemaining > 1) {
-                    // ডেমো প্র্যাকটিসের সুবিধার্থে একটি গাণিতিক ট্রেন্ড জেনারেটর ব্যবহার করা হয়েছে
-                    let trendFactor = Math.floor(Math.random() * 100);
+            // লজিক উইন্ডো: ক্যান্ডেল শেষ হওয়ার ১৫ সেকেন্ড থেকে ২ সেকেন্ডের মধ্যে সিগন্যাল আসবে
+            if (secondsRemaining <= 15 && secondsRemaining > 1) {
+                // সিগন্যাল যদি অলরেডি লক না হয়ে থাকে, তবেই মাত্র একবার জেনারেট হবে
+                if (!signalLocked) {
+                    let trendFactor = Math.random() * 100;
                     
-                    if (trendFactor > 55) { 
+                    if (trendFactor > 50) { 
                         signalDisplay.innerText = "🟢 NEXT CANDLE: BUY (UP)";
                         signalDisplay.className = "live-signal-text sig-buy";
                     } else { 
                         signalDisplay.innerText = "🔴 NEXT CANDLE: SELL (DOWN)";
                         signalDisplay.className = "live-signal-text sig-sell";
                     }
-                } else if (secondsRemaining <= 1 || secondsPassed < 5) {
-                    // নতুন ক্যান্ডেল শুরুর প্রথম ৫ সেকেন্ড সিগন্যাল রিলিজ বা রিফ্রেশ করবে
-                    signalDisplay.innerText = "⚪ OBSERVING NEW CANDLE...";
-                    signalDisplay.className = "live-signal-text";
-                } else {
-                    // ক্যান্ডেলের মাঝের সময়ে চার্ট স্টাডি করার জন্য ওয়েটিং স্টেট দেখাবে
+                    signalLocked = true; // একবার সিগন্যাল দিলে সেটা লক হয়ে যাবে, বারবার নাচবে না
+                }
+            } 
+            // ক্যান্ডেল শেষ হওয়ার ঠিক ১ সেকেন্ড আগে বা নতুন ক্যান্ডেল শুরুর প্রথম ৫ সেকেন্ডে রিসেট হবে
+            else if (secondsRemaining <= 1 || secondsPassed < 5) {
+                signalDisplay.innerText = "⚪ OBSERVING NEW CANDLE...";
+                signalDisplay.className = "live-signal-text";
+                signalLocked = false; // নতুন ক্যান্ডেলের জন্য লক খুলে দেওয়া হলো
+            } 
+            // ক্যান্ডেলের মাঝের সময়ে (০ থেকে ৪৫ সেকেন্ড) এনালাইসিস স্টেট দেখাবে
+            else {
+                if (!signalLocked) {
                     signalDisplay.innerText = "⚪ ANALYZING MARKET TREND...";
                     signalDisplay.className = "live-signal-text";
                 }
-            }, 1000); // প্রতি সেকেন্ডে লজিক রিভ্যালিডেট হবে
+            }
         }
 
+        // ১ সেকেন্ড পর পর পুরো ইঞ্জিন একসাথে রান হবে, ফলে টাইমিং মিসম্যাচ হবে না
+        setInterval(updateCandleEngine, 1000);
+
         window.onload = function() {
-            updateCandleTimer();
-            startSignalEngine();
+            updateCandleEngine();
         };
     </script>
 
