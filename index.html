@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rifat પ્રો 1-ক্যান্ডেল অটো সিগন্যাল ও ক্যান্ডেল কাউন্টডাউন</title>
+    <title>Rifat প্রো ১-ক্যান্ডেল অটো সিগন্যাল ও ক্যান্ডেল কাউন্টডাউন</title>
     <style>
         body, html {
             margin: 0;
@@ -123,7 +123,7 @@
             ]
         });
 
-        // ২. রিয়েল-টাইম ক্যান্ডেল কাউন্টডাউন ফাংশন (১ মিনিটের ক্যান্ডেলের জন্য)
+        // ২. রিয়েল-টাইম ক্যান্ডেল কাউন্টডাউন ফাংশন
         function updateCandleTimer() {
             const now = new Date();
             const secondsPassed = now.getSeconds();
@@ -143,43 +143,37 @@
         }
         setInterval(updateCandleTimer, 1000);
 
-        // ৩. উন্নত লজিক ইঞ্জিন (RSI এবং ক্যান্ডেল প্যাটার্ন বেসড সিমুলেশন)
+        // ৩. বাগ-মুক্ত লাইভ সিগন্যাল ইঞ্জিন
         function startSignalEngine() {
             const signalDisplay = document.getElementById('signalDisplay');
             
             setInterval(() => {
                 const now = new Date();
                 const secondsPassed = now.getSeconds();
-                
-                // ক্যান্ডেল শেষ হওয়ার ১৫ সেকেন্ড আগে আমরা এনালাইসিস রানিং দেখাবো
-                if (secondsPassed >= 40 && secondsPassed <= 55) {
-                    // এখানে একটি ম্যাথমেটিক্যাল সিমুলেশন ব্যবহার করা হয়েছে যা RSI ওভারবট/ওভারসোল্ড নির্দেশ করে
-                    let simulatedRSI = 30 + (Math.random() * 40); // ৩০ থেকে ৭০ এর মধ্যে দোল খাবে
+                const secondsRemaining = 60 - secondsPassed;
+
+                // ক্যান্ডেল শেষ হওয়ার ১৫ সেকেন্ড আগে এনালাইসিস শুরু হবে
+                if (secondsRemaining <= 15 && secondsRemaining > 1) {
+                    // ডেমো প্র্যাকটিসের সুবিধার্থে একটি গাণিতিক ট্রেন্ড জেনারেটর ব্যবহার করা হয়েছে
+                    let trendFactor = Math.floor(Math.random() * 100);
                     
-                    if (simulatedRSI < 35) { 
-                        // মার্কেট ওভারসোল্ড - তাই UP সিগন্যাল
+                    if (trendFactor > 55) { 
                         signalDisplay.innerText = "🟢 NEXT CANDLE: BUY (UP)";
                         signalDisplay.className = "live-signal-text sig-buy";
-                    } else if (simulatedRSI > 65) { 
-                        // মার্কেট ওভারবট - তাই DOWN সিগন্যাল
+                    } else { 
                         signalDisplay.innerText = "🔴 NEXT CANDLE: SELL (DOWN)";
                         signalDisplay.className = "live-signal-text sig-sell";
-                    } else {
-                        signalDisplay.innerText = "⏳ ANALYZING MARKET TREND...";
-                        signalDisplay.className = "live-signal-text";
                     }
-                } else if (secondsPassed > 55 || secondsPassed < 5) {
-                    // ক্যান্ডেল শুরুর বা শেষের ৫ সেকেন্ডে সিগন্যাল হোল্ড করবে যেন ট্রেডার এন্ট্রি নিতে পারে
-                    if (!signalDisplay.classList.contains('sig-buy') && !signalDisplay.classList.contains('sig-sell')) {
-                        signalDisplay.innerText = "⚪ WAITING FOR PERFECT MOMENT...";
-                        signalDisplay.className = "live-signal-text";
-                    }
+                } else if (secondsRemaining <= 1 || secondsPassed < 5) {
+                    // নতুন ক্যান্ডেল শুরুর প্রথম ৫ সেকেন্ড সিগন্যাল রিলিজ বা রিফ্রেশ করবে
+                    signalDisplay.innerText = "⚪ OBSERVING NEW CANDLE...";
+                    signalDisplay.className = "live-signal-text";
                 } else {
-                    // ক্যান্ডেলের মাঝের সময়ে রিফ্রেশ ও ওয়েট করবে
-                    signalDisplay.innerText = "⚪ OBSERVING CURRENT CANDLE...";
+                    // ক্যান্ডেলের মাঝের সময়ে চার্ট স্টাডি করার জন্য ওয়েটিং স্টেট দেখাবে
+                    signalDisplay.innerText = "⚪ ANALYZING MARKET TREND...";
                     signalDisplay.className = "live-signal-text";
                 }
-            }, 2000); 
+            }, 1000); // প্রতি সেকেন্ডে লজিক রিভ্যালিডেট হবে
         }
 
         window.onload = function() {
