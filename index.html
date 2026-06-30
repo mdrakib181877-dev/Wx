@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rifat প্রো ১-ক্যান্ডেল অটো সিগন্যাল ও ক্যান্ডেল কাউন্টডাউন</title>
+    <title>Rifat প্রো ১-ক্যান্ডেল রিয়েল TradingView সিগন্যাল</title>
     <style>
         body, html {
             margin: 0;
@@ -13,97 +13,83 @@
             background-color: #0d1117;
             font-family: 'Segoe UI', Arial, sans-serif;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
-        /* লাইভ ড্যাশবোর্ড */
-        .signal-dashboard {
-            position: absolute;
-            top: 15px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(22, 27, 34, 0.95);
-            border: 2px solid #3081f7;
-            border-radius: 12px;
-            padding: 15px;
-            z-index: 9999;
-            color: #fff;
-            text-align: center;
-            width: 90%;
-            max-width: 500px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(4px);
+        
+        /* উইজেট কন্টেইনার এরিয়া */
+        .dashboard-container {
+            width: 100%;
+            background: #161b22;
+            padding: 10px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border-bottom: 2px solid #3081f7;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            z-index: 10;
         }
+
         .market-title {
             font-size: 14px;
             color: #8b949e;
-            margin-bottom: 5px;
             font-weight: bold;
             letter-spacing: 1px;
+            margin-bottom: 5px;
         }
-        /* ক্যান্ডেল কাউন্টডাউন টাইমার ডিজাইন */
-        .candle-timer {
-            font-size: 20px;
-            font-weight: bold;
-            color: #ff9100;
-            margin-bottom: 8px;
-            background: #161b22;
-            display: inline-block;
-            padding: 5px 15px;
-            border-radius: 20px;
-            border: 1px solid #ff9100;
-            font-family: monospace;
-        }
-        .live-signal-text {
-            font-size: 24px;
-            font-weight: 800;
-            padding: 10px;
+
+        /* TradingView অফিশিয়াল এনালাইসিস উইজেট */
+        .tv-analysis-widget {
+            width: 90%;
+            max-width: 450px;
+            height: 150px; /* সিগন্যাল মিটার দেখানোর জন্য ফিক্সড হাইট */
+            overflow: hidden;
             border-radius: 8px;
-            margin: 10px 0;
-            transition: all 0.3s ease;
-            background-color: #21262d;
-            color: #c9d1d9;
         }
-        .sig-buy {
-            background-color: #238636 !important;
-            color: #ffffff !important;
-            animation: pulse 1s infinite;
-        }
-        .sig-sell {
-            background-color: #da3637 !important;
-            color: #ffffff !important;
-            animation: pulse 1s infinite;
-        }
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.02); }
-            100% { transform: scale(1); }
-        }
-        .countdown-info {
-            font-size: 12px;
-            color: #58a6ff;
-            margin-top: 5px;
-        }
+
+        /* চার্ট কন্টেইনার */
         .chart-container {
             width: 100%;
-            height: 100vh;
+            flex-grow: 1; /* বাকি পুরো স্ক্রিন জুড়ে চার্ট থাকবে */
+            height: calc(100vh - 190px);
         }
     </style>
 </head>
 <body>
 
-    <div class="signal-dashboard">
-        <div class="market-title">🎯 GBP/USD LIVE 1-MIN Rifat pro PREDICTOR</div>
-        <div id="candleTimer" class="candle-timer">⏳ 00:60</div>
-        <div id="signalDisplay" class="live-signal-text">⚪ WAITING FOR LIVE DATA...</div>
-        <div class="countdown-info">💡 টাইমার যখন 00:03 বা 00:02 সেকেন্ডে আসবে, তখন Quotex-এ এন্ট্রি নিন।</div>
+    <!-- ওপরের ড্যাশবোর্ড এরিয়া যেখানে আসল সিগন্যাল মিটার থাকবে -->
+    <div class="dashboard-container">
+        <div class="market-title">🎯 GBP/USD REAL-TIME TRADINGVIEW ANALYSIS</div>
+        <div class="tv-analysis-widget">
+            <!-- TradingView Technical Analysis Widget BEGIN -->
+            <div class="tradingview-widget-container">
+                <div class="tradingview-widget-container__widget"></div>
+                <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js" async>
+                {
+                "interval": "1m",
+                "width": "100%",
+                "isTransparent": true,
+                "height": "100%",
+                "symbol": "FX:GBPUSD",
+                "showHeading": false,
+                "screenMode": "normal",
+                "locale": "en",
+                "colorTheme": "dark"
+              }
+                </script>
+            </div>
+            <!-- TradingView Technical Analysis Widget END -->
+        </div>
     </div>
 
+    <!-- নিচের লাইভ চার্ট এরিয়া -->
     <div class="chart-container">
         <div id="advanced_easy_chart" style="width: 100%; height: 100%;"></div>
     </div>
 
     <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <script type="text/javascript">
-        // ১. লাইভ চার্ট লোড করা
+        // লাইভ চার্ট লোড করা (Bollinger Bands ও RSI সহ)
         new TradingView.widget({
             "width": "100%",
             "height": "100%",
@@ -122,66 +108,6 @@
                 "RSI@tv-basicstudies"  
             ]
         });
-
-        // ২. রিয়েল-টাইম ক্যান্ডেল কাউন্টডাউন ও সিগন্যাল লজিক
-        let signalLocked = false; // সিগন্যাল লক রাখার জন্য ভ্যারিয়েবল
-
-        function updateCandleEngine() {
-            const now = new Date();
-            const secondsPassed = now.getSeconds();
-            const secondsRemaining = 60 - secondsPassed;
-            
-            const displaySeconds = secondsRemaining < 10 ? '0' + secondsRemaining : secondsRemaining;
-            document.getElementById('candleTimer').innerText = "⏳ 00:" + displaySeconds;
-            
-            // টাইমারের কালার চেঞ্জ ৫ সেকেন্ড বাকি থাকতে
-            if (secondsRemaining <= 5) {
-                document.getElementById('candleTimer').style.borderColor = '#ff1744';
-                document.getElementById('candleTimer').style.color = '#ff1744';
-            } else {
-                document.getElementById('candleTimer').style.borderColor = '#ff9100';
-                document.getElementById('candleTimer').style.color = '#ff9100';
-            }
-
-            const signalDisplay = document.getElementById('signalDisplay');
-
-            // লজিক উইন্ডো: ক্যান্ডেল শেষ হওয়ার ১৫ সেকেন্ড থেকে ২ সেকেন্ডের মধ্যে সিগন্যাল আসবে
-            if (secondsRemaining <= 15 && secondsRemaining > 1) {
-                // সিগন্যাল যদি অলরেডি লক না হয়ে থাকে, তবেই মাত্র একবার জেনারেট হবে
-                if (!signalLocked) {
-                    let trendFactor = Math.random() * 100;
-                    
-                    if (trendFactor > 50) { 
-                        signalDisplay.innerText = "🟢 NEXT CANDLE: BUY (UP)";
-                        signalDisplay.className = "live-signal-text sig-buy";
-                    } else { 
-                        signalDisplay.innerText = "🔴 NEXT CANDLE: SELL (DOWN)";
-                        signalDisplay.className = "live-signal-text sig-sell";
-                    }
-                    signalLocked = true; // একবার সিগন্যাল দিলে সেটা লক হয়ে যাবে, বারবার নাচবে না
-                }
-            } 
-            // ক্যান্ডেল শেষ হওয়ার ঠিক ১ সেকেন্ড আগে বা নতুন ক্যান্ডেল শুরুর প্রথম ৫ সেকেন্ডে রিসেট হবে
-            else if (secondsRemaining <= 1 || secondsPassed < 5) {
-                signalDisplay.innerText = "⚪ OBSERVING NEW CANDLE...";
-                signalDisplay.className = "live-signal-text";
-                signalLocked = false; // নতুন ক্যান্ডেলের জন্য লক খুলে দেওয়া হলো
-            } 
-            // ক্যান্ডেলের মাঝের সময়ে (০ থেকে ৪৫ সেকেন্ড) এনালাইসিস স্টেট দেখাবে
-            else {
-                if (!signalLocked) {
-                    signalDisplay.innerText = "⚪ ANALYZING MARKET TREND...";
-                    signalDisplay.className = "live-signal-text";
-                }
-            }
-        }
-
-        // ১ সেকেন্ড পর পর পুরো ইঞ্জিন একসাথে রান হবে, ফলে টাইমিং মিসম্যাচ হবে না
-        setInterval(updateCandleEngine, 1000);
-
-        window.onload = function() {
-            updateCandleEngine();
-        };
     </script>
 
 </body>
